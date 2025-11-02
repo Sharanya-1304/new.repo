@@ -1,9 +1,7 @@
-# Simple Chef recipe to deploy your Node.js app
+# Simple Chef recipe to deploy Node.js app on Windows
 
-# Install Node.js (Windows-safe method)
-windows_package 'Node.js' do
-  source 'https://nodejs.org/dist/v18.18.2/node-v18.18.2-x64.msi'
-  installer_type :msi
+# Install Node.js via Chocolatey (most reliable)
+chocolatey_package 'nodejs-lts' do
   action :install
 end
 
