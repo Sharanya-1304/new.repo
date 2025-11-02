@@ -1,7 +1,9 @@
 # Simple Chef recipe to deploy your Node.js app
 
-# Install Node.js (if not installed)
-package 'nodejs' do
+# Install Node.js (Windows-safe method)
+windows_package 'Node.js' do
+  source 'https://nodejs.org/dist/v18.18.2/node-v18.18.2-x64.msi'
+  installer_type :msi
   action :install
 end
 
@@ -22,6 +24,6 @@ end
 powershell_script 'Start Node.js app' do
   code <<-EOH
     Stop-Process -Name node -ErrorAction SilentlyContinue
-    Start-Process -FilePath "node" -ArgumentList "C:\new.repo\app\server.js"
+    Start-Process -FilePath "node" -ArgumentList "C:\\new.repo\\app\\server.js"
   EOH
 end
