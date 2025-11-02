@@ -1,33 +1,29 @@
-# Install Chocolatey if missing
-powershell_script 'install_chocolatey' do
-  code <<-EOH
-    if (!(Test-Path "$env:ProgramData\\chocolatey\\bin\\choco.exe")) {
-      Set-ExecutionPolicy Bypass -Scope Process -Force
-      [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-      iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-    }
-  EOH
+# === Install Node.js directly via MSI ===
+remote_file 'C:\\nodejs.msi' do
+  source 'https://nodejs.org/dist/v18.18.2/node-v18.18.2-x64.msi'
+  action :create
 end
 
-# Install Node.js via Chocolatey
-chocolatey_package 'nodejs-lts' do
+windows_package 'Node.js' do
+  source 'C:\\nodejs.msi'
+  installer_type :msi
   action :install
 end
 
-# Ensure app directory exists
-directory 'C:\new.repo\app' do
+# === Ensure deployment directory exists ===
+directory 'C:\\new.repo\\app' do
   recursive true
   action :create
 end
 
-# Copy app code
-remote_directory 'C:\new.repo\app' do
+# === Copy app source ===
+remote_directory 'C:\\new.repo\\app' do
   source 'app'
   files_backup 0
   action :create
 end
 
-# Start the Node.js app
+# === Start Node.js server ===
 powershell_script 'Start Node.js app' do
   code <<-EOH
     Stop-Process -Name node -ErrorAction SilentlyContinue
