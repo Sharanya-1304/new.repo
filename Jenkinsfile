@@ -11,9 +11,9 @@ ins with Chefpipeline {
             steps {
                 echo "Running Chef deployment..."
                 bat '''
-                cd C:\ProgramData\Jenkins\.jenkins\workspace\Jenkins with Chef
+                cd C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\Jenkins with Chef
                 chef-client --local-mode --chef-license accept ^
-                --config-option cookbooks_path=C:\ProgramData\Jenkins\.jenkins\workspace\Jenkins with Chef\cookbooks ^
+                --config-option cookbooks_path=C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\Jenkins with Chef\\cookbooks ^
                 --runlist "recipe[my_app_deploy]"
                 '''
             }
