@@ -1,6 +1,15 @@
-# Simple Chef recipe to deploy Node.js app on Windows
+# Ensure Chocolatey is installed
+powershell_script 'install_chocolatey' do
+  code <<-EOH
+    if (!(Test-Path "$env:ProgramData\\chocolatey\\bin\\choco.exe")) {
+      Set-ExecutionPolicy Bypass -Scope Process -Force
+      [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+      iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    }
+  EOH
+end
 
-# Install Node.js via Chocolatey (most reliable)
+# Install Node.js via Chocolatey
 chocolatey_package 'nodejs-lts' do
   action :install
 end
