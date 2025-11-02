@@ -1,4 +1,4 @@
-# Ensure Chocolatey is installed
+# Install Chocolatey if missing
 powershell_script 'install_chocolatey' do
   code <<-EOH
     if (!(Test-Path "$env:ProgramData\\chocolatey\\bin\\choco.exe")) {
@@ -20,14 +20,14 @@ directory 'C:\new.repo\app' do
   action :create
 end
 
-# Copy app code to deployment directory
+# Copy app code
 remote_directory 'C:\new.repo\app' do
   source 'app'
   files_backup 0
   action :create
 end
 
-# Start the Node.js server
+# Start the Node.js app
 powershell_script 'Start Node.js app' do
   code <<-EOH
     Stop-Process -Name node -ErrorAction SilentlyContinue
