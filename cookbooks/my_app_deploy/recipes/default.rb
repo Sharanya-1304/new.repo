@@ -1,41 +1,64 @@
-# === Check if Node.js is already installed ===
-node_installed = ::File.exist?('C:\\Program Files\\nodejs\\node.exe')
+#
+# Cookbook:: my_app_deploy
+# Recipe:: default
+#
+# Copyright:: 2025, Sharanya, All Rights Reserved.
 
-# === Install Node.js only if not installed ===
-unless node_installed
-  remote_file 'C:\\nodejs.msi' do
-    source 'https://nodejs.org/dist/v18.18.2/node-v18.18.2-x64.msi'
-    action :create
-  end
+# Check if Node.js is installed
+nodejs_installed = system('where node > nul 2>&1')
 
-  windows_package 'Node.js' do
-    source 'C:\\nodejs.msi'
-    installer_type :msi
-    action :install
-  end
-else
+if nodejs_installed
   log 'Node.js already installed — skipping installation' do
     level :info
   end
+else
+  log 'Installing Node.js...' do
+    level :info
+  end
+  
+  # Download and install Node.js
+  powershell_script 'install_nodejs' do
+    code <<-EOH
+      $url = "https://nodejs.org/dist/v18.18.0/node-v18.18.0-x64.msi"
+      $output = "C:\\temp\\nodejs.msi"
+      New-Item -ItemType Directory -Force -Path C:\\temp
+      Invoke-WebRequest -Uri $url -OutFile $output
+      Start-Process msiexec.exe -Wait -ArgumentList '/i C:\\temp\\nodejs.msi /quiet /norestart'
+    EOH
+    action :run
+  end
 end
 
-# === Ensure app directory exists ===
-directory 'C:\\new.repo\\app' do
+# Create application directory
+directory 'C:\\new.repo' do
   recursive true
   action :create
 end
 
-# === Copy application files ===
-remote_directory 'C:\\new.repo\\app' do
-  source 'app'
-  files_backup 0
+# Clone or update the application repository
+git 'C:\\new.repo\\app' do
+  repository 'https://github.com/Sharanya-1304/new.repo.git'
+  revision 'main'
+  action :sync
+end
+
+# Install Node.js dependencies
+execute 'npm_install' do
+  command 'npm install'
+  cwd 'C:\\new.repo\\app'
+  only_if { ::File.exist?('C:\\new.repo\\app\\package.json') }
+end
+
+# Create a simple start script
+file 'C:\\new.repo\\app\\start.bat' do
+  content <<-EOH
+@echo off
+cd /d C:\\new.repo\\app
+npm start
+  EOH
   action :create
 end
 
-# === Restart Node.js app ===
-powershell_script 'Restart Node.js app' do
-  code <<-EOH
-    Stop-Process -Name node -ErrorAction SilentlyContinue
-    Start-Process -FilePath "node" -ArgumentList "C:\\new.repo\\app\\server.js"
-  EOH
+log 'Deployment completed successfully!' do
+  level :info
 end
